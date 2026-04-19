@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NetWatch — Network Monitor</title>
+    <meta http-equiv="refresh" content="10">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg:        #080d14;
+            --surface:   #0e1521;
+            --surface2:  #141e2e;
+            --border:    #1e2d42;
+            --text:      #c8d6e8;
+            --muted:     #5a718a;
+            --accent:    #38bdf8;
+            --green:     #34d399;
+            --red:       #f87171;
+            --yellow:    #fbbf24;
+            --purple:    #a78bfa;
+            --mono:      'JetBrains Mono', monospace;
+            --display:   'Syne', sans-serif;
+            --radius:    10px;
+            --transition: 0.2s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 13px;
+            min-height: 100vh;
+            padding: 0 0 60px;
+        }
+
+        /* ── Top bar ── */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 32px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+        }
+
+        .logo {
+            font-family: var(--display);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-dot {
+            width: 8px; height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        .header-meta {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        /* ── Alert banner ── */
+        .alert-banner {
+            margin: 24px 32px 0;
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-left: 3px solid var(--red);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fca5a5;
+            font-size: 13px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Stat cards ── */
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin: 24px 32px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 24px;
+            min-width: 160px;
+            flex: 1;
+            transition: border-color var(--transition);
+        }
+
+        .card:hover { border-color: var(--accent); }
+
+        .card-label {
+            color: var(--muted);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-family: var(--display);
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .card-value.accent { color: var(--accent); }
+        .card-value.danger { color: var(--red); }
+        .card-value.safe   { color: var(--green); }
+
+        /* ── Section headers ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 32px 32px 14px;
+        }
+
+        .section-title {
+            font-family: var(--display);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.5px;
+        }
+
+        .section-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .section-count {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        /* ── Tables ── */
+        .table-wrap {
+            margin: 0 32px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            padding: 11px 16px;
+            text-align: left;
+            color: var(--muted);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+
+        tbody tr {
+            transition: background var(--transition);
+        }
+
+        tbody tr:hover { background: var(--surface2); }
+
+        /* ── Row states ── */
+        tbody tr.danger-row { background: rgba(248, 113, 113, 0.06); }
+        tbody tr.danger-row:hover { background: rgba(248, 113, 113, 0.12); }
+
+        tbody tr.join-row { background: rgba(52, 211, 153, 0.06); }
+        tbody tr.join-row:hover { background: rgba(52, 211, 153, 0.12); }
+
+        tbody tr.leave-row { background: rgba(248, 113, 113, 0.06); }
+        tbody tr.leave-row:hover { background: rgba(248, 113, 113, 0.12); }
+
+        /* ── Inline elements ── */
+        .ip-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge-new {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--yellow);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .badge-join {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .badge-leave {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--red);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        .device-safe   { color: var(--green); }
+        .device-danger { color: var(--red); }
+
+        .ports-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .port-tag {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        .no-ports { color: var(--muted); font-style: italic; }
+
+        .vendor-text {
+            color: var(--muted);
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .mac-text {
+            color: var(--purple);
+            letter-spacing: 0.5px;
+        }
+
+        .time-text {
+            color: var(--muted);
+        }
+
+        /* ── Empty state ── */
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <div class="logo-dot"></div>
+        NetWatch
+    </div>
+    <div class="header-meta">Auto-refresh every 10s</div>
+</header>
+
+{% if suspicious %}
+<div class="alert-banner">
+    ⚠ &nbsp;<strong>{{ suspicious|length }} suspicious device{{ 's' if suspicious|length != 1 else '' }}</strong> detected on the network
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="stats">
+    <div class="card">
+        <div class="card-label">Total Devices</div>
+        <div class="card-value accent">{{ devices|length }}</div>
+    </div>
+    <div class="card">
+        <div class="card-label">New Devices</div>
+        <div class="card-value {% if new_ips %}safe{% else %}accent{% endif %}">{{ new_ips|length }}</div>
+    </div>
+    <div class="card">
+        <div class="card-label">Suspicious</div>
+        <div class="card-value {% if suspicious %}danger{% else %}accent{% endif %}">{{ suspicious|length }}</div>
+    </div>
+    <div class="card">
+        <div class="card-label">Events Logged</div>
+        <div class="card-value accent">{{ events|length }}</div>
+    </div>
+</div>
+
+<!-- Devices table -->
+<div class="section-header">
+    <div class="section-title">Active Devices</div>
+    <div class="section-line"></div>
+    <div class="section-count">{{ devices|length }}</div>
+</div>
+
+<div class="table-wrap">
+    {% if devices %}
+    <table>
+        <thead>
+            <tr>
+                <th>IP Address</th>
+                <th>MAC Address</th>
+                <th>Open Ports</th>
+                <th>Device Type</th>
+                <th>Vendor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in devices %}
+            <tr class="{% if 'Unknown' in d.device or 'Hidden' in d.device %}danger-row{% endif %}">
+                <td>
+                    <div class="ip-cell">
+                        <span>{{ d.ip }}</span>
+                        {% if d.ip in new_ips %}
+                            <span class="badge badge-new">New</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td><span class="mac-text">{{ d.mac }}</span></td>
+                <td>
+                    {% if d.ports %}
+                        <div class="ports-list">
+                            {% for p in d.ports %}
+                                <span class="port-tag">{{ p }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="no-ports">none</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if 'Unknown' in d.device or 'Hidden' in d.device %}
+                        <span class="device-danger">{{ d.device }}</span>
+                    {% else %}
+                        <span class="device-safe">{{ d.device }}</span>
+                    {% endif %}
+                </td>
+                <td><span class="vendor-text" title="{{ d.vendor }}">{{ d.vendor }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No devices found in last scan.</div>
+    {% endif %}
+</div>
+
+<!-- Event log -->
+<div class="section-header">
+    <div class="section-title">Event Log</div>
+    <div class="section-line"></div>
+    <div class="section-count">{{ events|length }}</div>
+</div>
+
+<div class="table-wrap">
+    {% if events %}
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Event</th>
+                <th>IP Address</th>
+                <th>Device</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in events %}
+            <tr class="{% if e.type == 'JOIN' %}join-row{% elif e.type == 'LEAVE' %}leave-row{% endif %}">
+                <td><span class="time-text">{{ e.time }}</span></td>
+                <td>
+                    {% if e.type == 'JOIN' %}
+                        <span class="badge badge-join">⬆ Join</span>
+                    {% elif e.type == 'LEAVE' %}
+                        <span class="badge badge-leave">⬇ Leave</span>
+                    {% else %}
+                        <span class="badge">{{ e.type }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ e.ip }}</td>
+                <td>{{ e.device }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No events logged yet.</div>
+    {% endif %}
+</div>
+
+<script>
+let lastEventTime = null;
+
+if (Notification.permission !== "granted") {
+    Notification.requestPermission();
+}
+
+function checkNewEvent() {
+    fetch("/events")
+        .then(res => res.json())
+        .then(data => {
+            if (!data.length) return;
+            const latest = data[0];
+            if (!lastEventTime) { lastEventTime = latest.time; return; }
+            if (lastEventTime === latest.time) return;
+            lastEventTime = latest.time;
+            if (Notification.permission === "granted") {
+                new Notification("NetWatch Alert", {
+                    body: `${latest.type} — ${latest.ip} (${latest.device})`
+                });
+            }
+        })
+        .catch(() => {});
+}
+
+setInterval(checkNewEvent, 5000);
+</script>
+
+</body>
+</html>
