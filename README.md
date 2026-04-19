@@ -55,7 +55,7 @@ The project combines network scanning, event tracking, and a clean UI to provide
 
 ## Dashboard Preview
 
-![Dashboard](screenshots/dashboard.png)
+![Dashboard](https://raw.githubusercontent.com/KrishnaSagar157/netwatch/main/screenshots/dashboard.png)
 
 ---
 
