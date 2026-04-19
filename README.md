@@ -55,7 +55,7 @@ The project combines network scanning, event tracking, and a clean UI to provide
 
 ## Dashboard Preview
 
-![Dashboard](https://raw.githubusercontent.com/KrishnaSagar157/netwatch/main/screenshots/dashboard.png)
+![Dashboard](https://raw.githubusercontent.com/KrishnaSagar157/netwatch/main/screenshot/dashboard.png)
 
 ---
 
@@ -81,7 +81,7 @@ netwatch/
 │   └── index.html           # Dashboard UI
 │
 ├── data/                    # Ignored (runtime data)
-├── screenshots/             # UI images
+├── screenshot/             # UI images
 ├── requirements.txt
 └── README.md
 ```
